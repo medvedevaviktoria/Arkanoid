@@ -12,9 +12,10 @@ namespace Arkanoid
         private int MaxX;
         private int MaxY;
         private int MinY;
-        private Block[,] Blocks;
+        private List<Block> Blocks;
         private const int Rows = 10;
         private const int Cols = 6;
+        private readonly Random random = new();
 
         public MainForm()
         {
@@ -26,17 +27,16 @@ namespace Arkanoid
             e.Graphics.FillEllipse(Brushes.White, ball.Rect);
             e.Graphics.FillRectangle(Brushes.Orange, platform.Rect);
 
-            for (var row = 0; row < Rows; row++)
-                for (var col = 0; col < Cols; col++)
+            foreach (var block in Blocks)
+            {
+                if (!block.IsDestroyed)
                 {
-                    var block = Blocks[row, col];
-                    if (block.IsDestroyed == false)
-                    {
-                        e.Graphics.FillRectangle(Brushes.Blue, block.Rect);
-                        e.Graphics.DrawRectangle(Pens.Black, block.Rect);
-                    }
+                    e.Graphics.FillRectangle(Brushes.Blue, block.Rect);
+                    e.Graphics.DrawRectangle(Pens.Black, block.Rect);
                 }
+            }
         }
+
 
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -51,37 +51,42 @@ namespace Arkanoid
             var centerXBall = (MaxX - ballWidth) / 2;
             var startYBall = MaxY - 175;
 
-            Random random = new Random();
+            
             ball = new Ball(new Rectangle(centerXBall, startYBall, ballWidth, ballHeight));
-            ball.SpeedX = random.Next(-5, 5);
-            ball.SpeedY = random.Next(-5, 0);
+            int direction = random.Next(0, 2) == 0 ? -1 : 1;
+            ball.SpeedX = random.Next(1, 5) * direction;
+            ball.SpeedY = random.Next(-10, -5);
             var centerXPlatform = (MaxX - platformWidth) / 2;
             var startYPlatform = startYBall + ballHeight;
             platform = new Platform(new Rectangle(centerXPlatform, startYPlatform, platformWidth, platformHeight));
 
             var blockWidth = MaxX / Cols;
             var blockHeight = (MaxY / Rows * 2) / Cols;
-            Blocks = new Block[Rows, Cols];
+            Blocks = new List<Block>();
             for (var row = 0; row < Rows; row++)
                 for (var col = 0; col < Cols; col++)
                 {
                     var x = col * blockWidth;
                     var y = 50 + row * blockHeight;
-                    Blocks[row, col] = new Block(new Rectangle(x + 1, y + 1, blockWidth - 2, blockHeight - 2));
+                    Blocks.Add(new Block(new Rectangle(x + 1, y + 1, blockWidth - 2, blockHeight - 2)));
                 }
         }
 
         private void MainForm_MouseMove(object sender, MouseEventArgs e)
         {
-            var newXPlatform = e.X - platform.Rect.Width / 2;
-            newXPlatform = Math.Max(MinX, Math.Min(MaxX - platform.Rect.Width, newXPlatform));
+            int newXPlatform = e.X - platform.Rect.Width / 2;
+            if (newXPlatform < MinX) newXPlatform = MinX;
+            if (newXPlatform > MaxX - platform.Rect.Width) newXPlatform = MaxX - platform.Rect.Width;
             platform.MovePlatform(newXPlatform);
-            if (gameStarted == false)
+
+            if (!gameStarted)
             {
-                var ballX = platform.Rect.X + (platform.Rect.Width - ball.Rect.Width) / 2;
+                int ballX = platform.Rect.X + (platform.Rect.Width - ball.Rect.Width) / 2;
+                if (ballX < MinX) ballX = MinX;
+                if (ballX > MaxX - ball.Rect.Width) ballX = MaxX - ball.Rect.Width;
                 ball.MoveBall(ballX, ball.Rect.Y);
+                Invalidate();
             }
-            Invalidate();
         }
 
         private void MainForm_MouseClick(object sender, MouseEventArgs e)
@@ -102,46 +107,46 @@ namespace Arkanoid
                 ball.SpeedY = -ball.SpeedY;
             //если шар коснулся платформы
             if (ball.Rect.IntersectsWith(platform.Rect) && ball.SpeedY > 0)
+            {
                 ball.SpeedY = -ball.SpeedY;
 
-            for (var row = 0; row < Rows; row++)
-                for (var col = 0; col < Cols; col++)
-                {
-                    var block = Blocks[row, col];
-                    if (block != null && !block.IsDestroyed && ball.Rect.IntersectsWith(block.Rect))
-                    {
-                        block.HitBlock();
-                        ball.SpeedY = -ball.SpeedY;
-                        if (block.IsDestroyed) block = null;
-                        break;
-                    }
-                }
+                int direction = random.Next(0, 2) == 0 ? -1 : 1;
+                ball.SpeedX = random.Next(1, 5) * direction;
+                ball.SpeedY = random.Next(-10, -5);
+            }
 
+            foreach (var block in Blocks)
+            {
+                if (!block.IsDestroyed && ball.Rect.IntersectsWith(block.Rect))
+                {
+                    block.HitBlock();
+                    ball.SpeedY = -ball.SpeedY;
+                    break;
+                }
+            }
+            Invalidate();
+            //проверка на победу
             if (IsGameWon())
             {
                 timer.Stop();
                 MessageBox.Show("Вы выиграли", "Победа", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Close();
             }
-
+            //проверка на проигрыш
             if (ball.Rect.Top > MaxY)
             {
                 timer.Stop();
                 MessageBox.Show("Вы проиграли", "Проигрыш", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Close();
             }
-
-            Invalidate();
         }
 
         private bool IsGameWon()
         {
-            for (var row = 0; row < Rows; row++)
-                for (var col = 0; col < Cols; col++)
-                {
-                    var block = Blocks[row, col];
-                    if (block != null) return false;
-                }
+            foreach (var block in Blocks)
+            {
+                if (!block.IsDestroyed) return false;
+            }
             return true;
         }
     }

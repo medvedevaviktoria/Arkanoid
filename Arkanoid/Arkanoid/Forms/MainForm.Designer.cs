@@ -34,7 +34,7 @@
             // 
             // timer
             // 
-            timer.Interval = 55;
+            timer.Interval = 10;
             timer.Tick += Timer_Tick;
             // 
             // MainForm
