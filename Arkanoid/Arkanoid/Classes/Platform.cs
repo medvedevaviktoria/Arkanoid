@@ -15,8 +15,9 @@ namespace Arkanoid.Classes
             Rect = rect;
         }
 
-        public void MovePlatform(int dx, int minX, int maxX)
+        public void MovePlatform(int X)
         {
+            Rect = new Rectangle(X, Rect.Y, Rect.Width, Rect.Height);
         }
 
     }

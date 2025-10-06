@@ -7,8 +7,8 @@ namespace Arkanoid
     {
         private Ball ball;
         private Platform platform;
-        Image platformImage = Properties.Resources.platformImg;
-        Image ballImage = Properties.Resources.ballImg;
+        private int platformMinX;
+        private int platformMaxX;
         private Block[,] Blocks;
         private int rows = 10;
         private int cols = 6;
@@ -20,8 +20,8 @@ namespace Arkanoid
 
         private void MainForm_Paint(object sender, PaintEventArgs e)
         {
-            e.Graphics.DrawImage(ballImage, ball.Rect);
-            e.Graphics.DrawImage(platformImage, platform.Rect);
+            e.Graphics.FillEllipse(Brushes.White, ball.Rect);
+            e.Graphics.FillRectangle(Brushes.Orange, platform.Rect);
 
             for (var row = 0; row < rows; row++)
                 for (var col = 0; col < cols; col++)
@@ -58,7 +58,17 @@ namespace Arkanoid
                     var y = 50 + row * blockHeight;
                     Blocks[row, col] = new Block(new Rectangle(x + 1, y + 1, blockWidth - 2, blockHeight - 2));
                 }
+
+            platformMinX = 0;
+            platformMaxX = ClientSize.Width;
         }
 
+        private void MainForm_MouseMove(object sender, MouseEventArgs e)
+        {
+            var newX = e.X - platform.Rect.Width / 2;
+            newX = Math.Max(0, Math.Min(ClientSize.Width - platform.Rect.Width, newX));
+            platform.MovePlatform(newX);
+            Invalidate();
+        }
     }
 }

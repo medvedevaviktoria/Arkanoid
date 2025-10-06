@@ -36,6 +36,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Black;
             ClientSize = new Size(1153, 708);
+            DoubleBuffered = true;
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             MinimizeBox = false;
@@ -44,6 +45,7 @@
             Text = "Arkanoid";
             Load += MainForm_Load;
             Paint += MainForm_Paint;
+            MouseMove += MainForm_MouseMove;
             ResumeLayout(false);
         }
 
