@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+            timer = new System.Windows.Forms.Timer(components);
             SuspendLayout();
             // 
             // MainForm
@@ -45,10 +47,13 @@
             Text = "Arkanoid";
             Load += MainForm_Load;
             Paint += MainForm_Paint;
+            MouseClick += MainForm_MouseClick;
             MouseMove += MainForm_MouseMove;
             ResumeLayout(false);
         }
 
         #endregion
+
+        private System.Windows.Forms.Timer timer;
     }
 }

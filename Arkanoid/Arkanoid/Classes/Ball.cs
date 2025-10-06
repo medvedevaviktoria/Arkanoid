@@ -9,12 +9,16 @@ namespace Arkanoid.Classes
     internal class Ball
     {
         public Rectangle Rect { get; set; }
-        //public Point Position { get; set; }
+        public int SpeedX { get; set; }
+        public int SpeedY { get; set; }
 
-        public Ball(Rectangle rect/*, Point position*/)
+        public Ball(Rectangle rect)
         {
             Rect = rect;
-            //Position = position;
+        }
+        public void MoveBall(Point newPos)
+        {
+            Rect = new Rectangle(newPos.X, newPos.Y, Rect.Width, Rect.Height);
         }
     }
 }
