@@ -8,11 +8,13 @@ namespace Arkanoid
         private bool gameStarted = false;
         private Ball ball;
         private Platform platform;
-        private int platformMinX;
-        private int platformMaxX;
+        private int MinX;
+        private int MaxX;
+        private int MaxY;
+        private int MinY;
         private Block[,] Blocks;
-        private int rows = 10;
-        private int cols = 6;
+        private const int Rows = 10;
+        private const int Cols = 6;
 
         public MainForm()
         {
@@ -24,38 +26,44 @@ namespace Arkanoid
             e.Graphics.FillEllipse(Brushes.White, ball.Rect);
             e.Graphics.FillRectangle(Brushes.Orange, platform.Rect);
 
-            for (var row = 0; row < rows; row++)
-                for (var col = 0; col < cols; col++)
+            for (var row = 0; row < Rows; row++)
+                for (var col = 0; col < Cols; col++)
                 {
-                    if (Blocks[row, col].IsDestroyed == false)
+                    var block = Blocks[row, col];
+                    if (block.IsDestroyed == false)
                     {
-                        e.Graphics.FillRectangle(Brushes.Blue, Blocks[row, col].Rect);
-                        e.Graphics.DrawRectangle(Pens.Black, Blocks[row, col].Rect);
+                        e.Graphics.FillRectangle(Brushes.Blue, block.Rect);
+                        e.Graphics.DrawRectangle(Pens.Black, block.Rect);
                     }
                 }
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            platformMinX = 0;
-            platformMaxX = ClientSize.Width;
+            MinX = 0;
+            MaxX = ClientSize.Width;
+            MinY = 0;
+            MaxY = ClientSize.Height;
             var ballWidth = 20;
             var ballHeight = 20;
             var platformWidth = 110;
             var platformHeight = 20;
-            var centerXBall = (platformMaxX - ballWidth) / 2;
-            var startYBall = ClientSize.Height - 175;
+            var centerXBall = (MaxX - ballWidth) / 2;
+            var startYBall = MaxY - 175;
 
+            Random random = new Random();
             ball = new Ball(new Rectangle(centerXBall, startYBall, ballWidth, ballHeight));
-            var centerXPlatform = (platformMaxX - platformWidth) / 2;
-            var YPlatform = startYBall + ballHeight;
-            platform = new Platform(new Rectangle(centerXPlatform, YPlatform, platformWidth, platformHeight));
+            ball.SpeedX = random.Next(-5, 5);
+            ball.SpeedY = random.Next(-5, 0);
+            var centerXPlatform = (MaxX - platformWidth) / 2;
+            var startYPlatform = startYBall + ballHeight;
+            platform = new Platform(new Rectangle(centerXPlatform, startYPlatform, platformWidth, platformHeight));
 
-            var blockWidth = platformMaxX / cols;
-            var blockHeight = (ClientSize.Height / rows * 2) / cols;
-            Blocks = new Block[rows, cols];
-            for (var row = 0; row < rows; row++)
-                for (var col = 0; col < cols; col++)
+            var blockWidth = MaxX / Cols;
+            var blockHeight = (MaxY / Rows * 2) / Cols;
+            Blocks = new Block[Rows, Cols];
+            for (var row = 0; row < Rows; row++)
+                for (var col = 0; col < Cols; col++)
                 {
                     var x = col * blockWidth;
                     var y = 50 + row * blockHeight;
@@ -66,19 +74,75 @@ namespace Arkanoid
         private void MainForm_MouseMove(object sender, MouseEventArgs e)
         {
             var newXPlatform = e.X - platform.Rect.Width / 2;
-            newXPlatform = Math.Max(platformMinX, Math.Min(platformMaxX - platform.Rect.Width, newXPlatform));
+            newXPlatform = Math.Max(MinX, Math.Min(MaxX - platform.Rect.Width, newXPlatform));
             platform.MovePlatform(newXPlatform);
             if (gameStarted == false)
             {
-                int ballX = platform.Rect.X + (platform.Rect.Width - ball.Rect.Width) / 2;
-                ball.MoveBall(new Point(ballX, ball.Rect.Y));
+                var ballX = platform.Rect.X + (platform.Rect.Width - ball.Rect.Width) / 2;
+                ball.MoveBall(ballX, ball.Rect.Y);
             }
             Invalidate();
         }
 
         private void MainForm_MouseClick(object sender, MouseEventArgs e)
         {
-            if (gameStarted == false ) gameStarted = true;
+            if (gameStarted == false) gameStarted = true;
+            timer.Start();
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            ball.MoveBall(ball.Rect.X + ball.SpeedX, ball.Rect.Y + ball.SpeedY);
+
+            //границы для шара по X
+            if (ball.Rect.Left <= MinX || ball.Rect.Right >= MaxX)
+                ball.SpeedX = -ball.SpeedX;
+            //границы для шара по Y
+            if (ball.Rect.Top <= MinY)
+                ball.SpeedY = -ball.SpeedY;
+            //если шар коснулся платформы
+            if (ball.Rect.IntersectsWith(platform.Rect) && ball.SpeedY > 0)
+                ball.SpeedY = -ball.SpeedY;
+
+            for (var row = 0; row < Rows; row++)
+                for (var col = 0; col < Cols; col++)
+                {
+                    var block = Blocks[row, col];
+                    if (block != null && !block.IsDestroyed && ball.Rect.IntersectsWith(block.Rect))
+                    {
+                        block.HitBlock();
+                        ball.SpeedY = -ball.SpeedY;
+                        if (block.IsDestroyed) block = null;
+                        break;
+                    }
+                }
+
+            if (IsGameWon())
+            {
+                timer.Stop();
+                MessageBox.Show("Вы выиграли", "Победа", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Close();
+            }
+
+            if (ball.Rect.Top > MaxY)
+            {
+                timer.Stop();
+                MessageBox.Show("Вы проиграли", "Проигрыш", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Close();
+            }
+
+            Invalidate();
+        }
+
+        private bool IsGameWon()
+        {
+            for (var row = 0; row < Rows; row++)
+                for (var col = 0; col < Cols; col++)
+                {
+                    var block = Blocks[row, col];
+                    if (block != null) return false;
+                }
+            return true;
         }
     }
 }

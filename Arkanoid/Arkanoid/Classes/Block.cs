@@ -18,12 +18,10 @@ namespace Arkanoid.Classes
             Health = health;
         }
 
-        public void HitBlock(int damage)
+        public void HitBlock()
         {
-            Health -= damage;
+            Health -= 1;
             if (Health <= 0) IsDestroyed = true;
         }
-
-        
     }
 }

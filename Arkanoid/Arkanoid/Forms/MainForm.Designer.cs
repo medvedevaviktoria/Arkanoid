@@ -32,6 +32,11 @@
             timer = new System.Windows.Forms.Timer(components);
             SuspendLayout();
             // 
+            // timer
+            // 
+            timer.Interval = 55;
+            timer.Tick += Timer_Tick;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);

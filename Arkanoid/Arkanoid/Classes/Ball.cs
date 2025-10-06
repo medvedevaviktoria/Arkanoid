@@ -16,9 +16,9 @@ namespace Arkanoid.Classes
         {
             Rect = rect;
         }
-        public void MoveBall(Point newPos)
+        public void MoveBall(int x, int y)
         {
-            Rect = new Rectangle(newPos.X, newPos.Y, Rect.Width, Rect.Height);
+            Rect = new Rectangle(x, y, Rect.Width, Rect.Height);
         }
     }
 }
