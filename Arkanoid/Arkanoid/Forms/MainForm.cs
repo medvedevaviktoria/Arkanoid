@@ -53,7 +53,7 @@ namespace Arkanoid
 
             
             ball = new Ball(new Rectangle(centerXBall, startYBall, ballWidth, ballHeight));
-            int direction = random.Next(0, 2) == 0 ? -1 : 1;
+            var direction = random.Next(0, 2) == 0 ? -1 : 1;
             ball.SpeedX = random.Next(1, 5) * direction;
             ball.SpeedY = random.Next(-10, -5);
             var centerXPlatform = (MaxX - platformWidth) / 2;
@@ -74,14 +74,14 @@ namespace Arkanoid
 
         private void MainForm_MouseMove(object sender, MouseEventArgs e)
         {
-            int newXPlatform = e.X - platform.Rect.Width / 2;
+            var newXPlatform = e.X - platform.Rect.Width / 2;
             if (newXPlatform < MinX) newXPlatform = MinX;
             if (newXPlatform > MaxX - platform.Rect.Width) newXPlatform = MaxX - platform.Rect.Width;
             platform.MovePlatform(newXPlatform);
 
             if (!gameStarted)
             {
-                int ballX = platform.Rect.X + (platform.Rect.Width - ball.Rect.Width) / 2;
+                var ballX = platform.Rect.X + (platform.Rect.Width - ball.Rect.Width) / 2;
                 if (ballX < MinX) ballX = MinX;
                 if (ballX > MaxX - ball.Rect.Width) ballX = MaxX - ball.Rect.Width;
                 ball.MoveBall(ballX, ball.Rect.Y);
@@ -109,9 +109,20 @@ namespace Arkanoid
             if (ball.Rect.IntersectsWith(platform.Rect) && ball.SpeedY > 0)
             {
                 ball.SpeedY = -ball.SpeedY;
-
-                int direction = random.Next(0, 2) == 0 ? -1 : 1;
-                ball.SpeedX = random.Next(1, 5) * direction;
+                var hitPosition = ball.Rect.Width / 2 + ball.Rect.X - platform.Rect.X;//расстояние от левого края платформы до шарика
+                var thirdWidth = platform.Rect.Width / 3;
+                if (hitPosition < thirdWidth) 
+                {
+                    ball.SpeedX = random.Next(1, 5) * -1; // летит влево
+                }
+                else if (hitPosition < 2 * thirdWidth)
+                {
+                    ball.SpeedX = 0; // летит прямо вверх
+                }
+                else
+                {
+                    ball.SpeedX = random.Next(1, 5); // летит вправо
+                }
                 ball.SpeedY = random.Next(-10, -5);
             }
 
