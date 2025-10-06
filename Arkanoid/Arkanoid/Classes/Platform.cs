@@ -6,15 +6,18 @@ using System.Threading.Tasks;
 
 namespace Arkanoid.Classes
 {
-    internal class Ball
+    internal class Platform
     {
         public Rectangle Rect { get; set; }
-        //public Point Position { get; set; }
 
-        public Ball(Rectangle rect/*, Point position*/)
+        public Platform(Rectangle rect)
         {
             Rect = rect;
-            //Position = position;
         }
+
+        public void MovePlatform(int dx, int minX, int maxX)
+        {
+        }
+
     }
 }
