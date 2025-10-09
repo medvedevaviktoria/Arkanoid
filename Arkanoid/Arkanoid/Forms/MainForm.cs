@@ -6,8 +6,8 @@ namespace Arkanoid
     public partial class MainForm : Form
     {
         private bool gameStarted = false;
-        private Ball ball;
-        private Platform platform;
+        private Ball ball = null!;
+        private Platform platform = null!;
         private int MinX, MaxX, MaxY, MinY;
         private List<Block> Blocks = [];
         private const int Rows = 10;
