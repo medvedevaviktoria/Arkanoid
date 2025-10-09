@@ -93,9 +93,13 @@ namespace Arkanoid
             var newXPlatform = e.X - platform.Rect.Width / 2;
             // Ограничение пределов экрана для платформы.
             if (newXPlatform < MinX)
-            { newXPlatform = MinX; }
+            { 
+                newXPlatform = MinX;
+            }
             if (newXPlatform > MaxX - platform.Rect.Width) 
-            { newXPlatform = MaxX - platform.Rect.Width; }
+            { 
+                newXPlatform = MaxX - platform.Rect.Width;
+            }
             platform.SetPlatformPos(newXPlatform);
 
             if (!gameStarted)
@@ -103,9 +107,13 @@ namespace Arkanoid
                 var ballX = platform.Rect.X + (platform.Rect.Width - ball.Rect.Width) / 2;
                 // Ограничение пределов экрана для шара.
                 if (ballX < MinX) 
-                { ballX = MinX; }
+                { 
+                    ballX = MinX;
+                }
                 if (ballX > MaxX - ball.Rect.Width) 
-                { ballX = MaxX - ball.Rect.Width; }
+                { 
+                    ballX = MaxX - ball.Rect.Width;
+                }
                 ball.SetBallPos(ballX, ball.Rect.Y);
                 Invalidate();
             }
@@ -116,7 +124,10 @@ namespace Arkanoid
         /// </summary>
         private void MainForm_MouseClick(object sender, MouseEventArgs e)
         {
-            if (gameStarted == false) gameStarted = true;
+            if (gameStarted == false)
+            { 
+                gameStarted = true; 
+            }
             timer.Start();
         }
 
@@ -129,10 +140,14 @@ namespace Arkanoid
 
             // Границы для шара по X.
             if (ball.Rect.Left <= MinX || ball.Rect.Right >= MaxX)
-                { ball.SpeedX = -ball.SpeedX; }
+            { 
+                ball.SpeedX = -ball.SpeedX;
+            }
             // Границы для шара по Y.
             if (ball.Rect.Top <= MinY)
-                { ball.SpeedY = -ball.SpeedY; }
+            { 
+                ball.SpeedY = -ball.SpeedY; 
+            }
             // Если шар коснулся платформы.
             if (ball.Rect.IntersectsWith(platform.Rect) && ball.SpeedY > 0)
             {
