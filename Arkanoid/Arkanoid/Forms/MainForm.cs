@@ -6,8 +6,8 @@ namespace Arkanoid
     public partial class MainForm : Form
     {
         private bool gameStarted = false;
-        private Ball ball = default!;
-        private Platform platform = default!;
+        private Ball ball;
+        private Platform platform;
         private int MinX, MaxX, MaxY, MinY;
         private List<Block> Blocks = [];
         private const int Rows = 10;
@@ -44,11 +44,14 @@ namespace Arkanoid
         private void MainForm_Load(object sender, EventArgs e)
         {
             // -------- ПАРАМЕТРЫ ОКНА --------
-            MinX = 0; MaxX = ClientSize.Width; // Ширина окна.
-            MinY = 0; MaxY = ClientSize.Height; // Высота окна.
+            MinX = 0; 
+            MaxX = ClientSize.Width; // Ширина окна.
+            MinY = 0; 
+            MaxY = ClientSize.Height; // Высота окна.
 
             // -------- ШАР --------
-            var ballWidth = 20; var ballHeight = 20; 
+            var ballWidth = 20; 
+            var ballHeight = 20; 
 
             var startXBall = (MaxX - ballWidth) / 2;
             var startYBall = MaxY - 175;
@@ -59,7 +62,8 @@ namespace Arkanoid
             ball.SpeedY = random.Next(-10, -5);
 
             // -------- ПЛАТФОРМА --------
-            var platformWidth = 110; var platformHeight = 20;
+            var platformWidth = 110; 
+            var platformHeight = 20;
             
             var startXPlatform = (MaxX - platformWidth) / 2;
             var startYPlatform = startYBall + ballHeight;
@@ -68,14 +72,16 @@ namespace Arkanoid
             // -------- БЛОКИ --------
             // Параметры блоков.
             var blockWidth = MaxX / Cols;
-            var blockHeight = (MaxY / Rows * 2) / Cols;
+            var blockHeight = MaxY / (Rows * 2);
+            var startBlockY = 50;
+            var blockBorder = 2;
             Blocks = [];
             for (var row = 0; row < Rows; row++)
                 for (var col = 0; col < Cols; col++)
                 {
                     var x = col * blockWidth;
-                    var y = 50 + row * blockHeight;
-                    Blocks.Add(new Block(new Rectangle(x + 1, y + 1, blockWidth - 2, blockHeight - 2)));
+                    var y = startBlockY + row * blockHeight;
+                    Blocks.Add(new Block(new Rectangle(x + blockBorder / 2, y + blockBorder / 2, blockWidth - blockBorder, blockHeight - blockBorder)));
                 }
         }
 
@@ -86,17 +92,21 @@ namespace Arkanoid
         {
             var newXPlatform = e.X - platform.Rect.Width / 2;
             // Ограничение пределов экрана для платформы.
-            if (newXPlatform < MinX) newXPlatform = MinX;
-            if (newXPlatform > MaxX - platform.Rect.Width) newXPlatform = MaxX - platform.Rect.Width;
-            platform.MovePlatform(newXPlatform);
+            if (newXPlatform < MinX)
+            { newXPlatform = MinX; }
+            if (newXPlatform > MaxX - platform.Rect.Width) 
+            { newXPlatform = MaxX - platform.Rect.Width; }
+            platform.SetPlatformPos(newXPlatform);
 
             if (!gameStarted)
             {
                 var ballX = platform.Rect.X + (platform.Rect.Width - ball.Rect.Width) / 2;
                 // Ограничение пределов экрана для шара.
-                if (ballX < MinX) ballX = MinX;
-                if (ballX > MaxX - ball.Rect.Width) ballX = MaxX - ball.Rect.Width;
-                ball.MoveBall(ballX, ball.Rect.Y);
+                if (ballX < MinX) 
+                { ballX = MinX; }
+                if (ballX > MaxX - ball.Rect.Width) 
+                { ballX = MaxX - ball.Rect.Width; }
+                ball.SetBallPos(ballX, ball.Rect.Y);
                 Invalidate();
             }
         }
@@ -115,14 +125,14 @@ namespace Arkanoid
         /// </summary>
         private void Timer_Tick(object sender, EventArgs e)
         {
-            ball.MoveBall(ball.Rect.X + ball.SpeedX, ball.Rect.Y + ball.SpeedY);
+            ball.SetBallPos(ball.Rect.X + ball.SpeedX, ball.Rect.Y + ball.SpeedY);
 
             // Границы для шара по X.
             if (ball.Rect.Left <= MinX || ball.Rect.Right >= MaxX)
-                ball.SpeedX = -ball.SpeedX;
+                { ball.SpeedX = -ball.SpeedX; }
             // Границы для шара по Y.
             if (ball.Rect.Top <= MinY)
-                ball.SpeedY = -ball.SpeedY;
+                { ball.SpeedY = -ball.SpeedY; }
             // Если шар коснулся платформы.
             if (ball.Rect.IntersectsWith(platform.Rect) && ball.SpeedY > 0)
             {
@@ -144,24 +154,26 @@ namespace Arkanoid
                 ball.SpeedY = random.Next(-10, -5);
             }
 
+            
             foreach (var block in Blocks)
             {
                 if (!block.IsDestroyed && ball.Rect.IntersectsWith(block.Rect))
                 {
                     block.HitBlock();
                     ball.SpeedY = -ball.SpeedY;
+
+                    if (block.IsDestroyed && IsGameWon())
+                    {
+                        Invalidate();
+                        timer.Stop();
+                        MessageBox.Show("Поздравляю! Вы выиграли :)", "Победа", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        Close();
+                    }
                     break;
                 }
             }
             Invalidate();
 
-            //Проверка на победу.
-            if (IsGameWon())
-            {
-                timer.Stop();
-                MessageBox.Show("Поздравляю! Вы выиграли :)", "Победа", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                Close();
-            }
             // Проверка на проигрыш.
             if (ball.Rect.Top > MaxY)
             {
@@ -174,13 +186,6 @@ namespace Arkanoid
         /// <summary>
         /// Метод определения победы.
         /// </summary>
-        private bool IsGameWon()
-        {
-            foreach (var block in Blocks)
-            {
-                if (!block.IsDestroyed) return false;
-            }
-            return true;
-        }
+        private bool IsGameWon() => Blocks.All(x => x.IsDestroyed);
     }
 }

@@ -9,7 +9,9 @@ namespace Arkanoid.Classes
     internal class Block
     {
         public Rectangle Rect { get; set; }
+
         public int Health { get; set; }
+
         public bool IsDestroyed { get; set; }
 
         public Block(Rectangle rect, int health = 1)
